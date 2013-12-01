@@ -17,6 +17,9 @@ function setUp(host, port, db_name, callback){
 				throw err;
 		});
 
+		db.getObj = getObj;
+		db.insertObj = insertObj;
+
 		callback(db);
 	});
 };
@@ -35,6 +38,25 @@ function insertDummyUsers(collection){
 			"group": "admin"
 		}, function(){});
 	});
+}
+
+function insertObject(obj){
+	this.insert(obj, function(){});
+}
+
+function getObj(collection_name, cb){
+	db.collection(collection_name).find({}, function(err, cursor){
+		if (err)
+			throw err;
+
+		cursor.toArray(function(error, objArray){
+			cb(objArray);
+		});
+	});
+};
+
+function insertObj(collection_name, obj){
+	db.collection(collection_name).insert(obj, function(){});
 }
 
 exports.setUp = setUp;

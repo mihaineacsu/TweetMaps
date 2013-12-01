@@ -2,22 +2,17 @@ var superagent = require("superagent"),
 	https = require("https");
 
 function route(express_app, db){
-	var users = db.collection('users'),
-		tweets = db.collection('tweets');
+	var tweets = db.collection('tweets');
 
 	// List all the users
 	express_app.get('/user', function(request, response){
-		users.find({}, function(err, cursor){
-			if (err)
-				throw err;
-
-			cursor.toArray(function(error, users){
-				if (users.length == 0)
-					response.send("No users found");
-				else
-					response.send(users);
-			});
+		db.getObj('users', function(users){
+			if (users.length == 0)
+				response.send("No users found");
+			else
+				response.send(users);
 		});
+
 	});
 
 	express_app.get('/', function(request, response){
