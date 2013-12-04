@@ -1,23 +1,21 @@
 var superagent = require("superagent"),
-	https = require("https");
+	https = require("https"),
+	nunjucks = require("nunjucks");
 
 function route(express_app, db){
-	var users = db.collection('users'),
-		tweets = db.collection('tweets');
+	nunjucksSetUp(express_app);
+
+	var tweets = db.collection('tweets');
 
 	// List all the users
 	express_app.get('/user', function(request, response){
-		users.find({}, function(err, cursor){
-			if (err)
-				throw err;
-
-			cursor.toArray(function(error, users){
-				if (users.length == 0)
-					response.send("No users found");
-				else
-					response.send(users);
-			});
+		db.getObj('users', function(users){
+			if (users.length == 0)
+				response.send("No users found");
+			else
+				response.send(users);
 		});
+
 	});
 
 	express_app.get('/', function(request, response){
@@ -26,16 +24,7 @@ function route(express_app, db){
 			response.end("All good, you're logged in! <a href='/logout'>Logout</a>");
 		}
 		else{
-			response.writeHead(200, {'Content-Type': 'text/html'});
-			response.end(['<form action="/login" method="POST"',
-					'<fieldset>',
-						'<legend>Please log in</legend>',
-						'<p>User: <input type="text" name="user"></p>',
-						'<p>Password: <input type="password" name="password"></p>',
-						'<button>Submit</button>',
-					'</fieldset>',
-				'</form>',
-				'<br><a href="/register">Register</a>'].join(''));
+			response.render('index.html');
 		}
 	});
 
@@ -129,8 +118,13 @@ function route(express_app, db){
 	express_app.get('*', function(request, response){
 		response.send('Page not found', 404);
 	});
-
-
-
 };
+
+function nunjucksSetUp(express_app){
+	nunjucks.configure('views', {
+    	autoescape: true,
+    	express: express_app
+	});
+}
+
 exports.route = route;
