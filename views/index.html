@@ -1,6 +1,6 @@
 {% include "base.html" %}
 
-<form action="/login" method="POST"
+<form action="/login" method="POST">
 	<fieldset>
 		<legend>Please log in</legend>
 		<p>User: <input type="text" name="user"></p>
@@ -9,6 +9,11 @@
 	</fieldset>
 </form>
 <br><a href="/register">Register</a>
+
+<br>
+Term: <input type="text" id="search-term" value="ceva">
+<button id="submit-search">Search</button>
+
   <div id="world-map" style="width: 600px; height: 400px"></div>
   <script>
     $(function(){
@@ -52,6 +57,11 @@
    		socket.emit('clientMessage', selected, 'USER001');  
 	};
 	send();
+
+	$('#submit-search').click(function(e) {
+		console.log("caut dupa " + $('#search-term').val());
+		send($('#search-term').val());
+	});
 
 
     })
