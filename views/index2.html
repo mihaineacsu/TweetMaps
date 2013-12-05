@@ -1,0 +1,71 @@
+{% include "base.html" %}
+
+Term: <input type="text" id="search-term" value="ceva">
+<button id="submit-search">Search</button>
+
+  <div id="world-map" style="width: 600px; height: 400px"></div>
+   <div id='results'><ul></ul></div>
+  <script>
+    $(function(){
+      var selected, selectedLatLng
+    	var map = new jvm.WorldMap({
+          map: 'world_mill_en',
+          container: $('#world-map'),
+          regionsSelectable: true,
+          regionsSelectableOne: true,
+          series: {
+            regions: [{
+              attribute: 'fill'
+            }]
+          },
+
+        });
+
+      	var palette = ['#66C2A5', '#FC8D62', '#8DA0CB', '#E78AC3', '#A6D854'];
+            generateColors = function(){
+              var colors = {},
+                  key;
+
+              for (key in map.regions) {
+                colors[key] = palette[Math.floor(Math.random()*palette.length)];
+              }
+              return colors;
+            },
+            map;
+
+     map.series.regions[0].setValues(generateColors());
+        $('#update-colors-button').click(function(e){
+          e.preventDefault();
+          map.series.regions[0].setValues(generateColors());
+        });
+
+
+      map.container.click(function(e){
+      var latLng = map.pointToLatLng(e.offsetX, e.offsetY),
+          targetCls = $(e.target).attr('class');
+      console.log(latLng);
+      selectedLatLng = latLng;
+  });
+
+    var socket = io.connect('http://127.0.0.1');
+    function send(query) {
+    	console.log("Sending mesg");
+   		socket.emit('searchTweets', {'q': query, 'locations': selectedLatLng}, 'USER001');  
+	};
+
+	$('#submit-search').click(function(e) {
+		console.log("caut dupa " + $('#search-term').val());
+		send($('#search-term').val());
+	});
+
+    socket.on('results', function(data){
+      var text = data['d']['text'];
+      console.log(text);
+      $("ul").prepend("<li>" + text + "</li>");
+    })
+
+    })
+  </script>
+ 
+</body>
+</html>

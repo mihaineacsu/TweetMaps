@@ -5,6 +5,7 @@ var superagent = require("superagent"),
 function route(express_app, db){
 	nunjucksSetUp(express_app);
 
+	var users = db.collection('users');
 	var tweets = db.collection('tweets');
 
 	// List all the users
@@ -29,7 +30,6 @@ function route(express_app, db){
 	});
 
 	express_app.post('/login', function(request, response){
-		response.writeHead(200, {'Content-Type': 'text/html'});
 		users.find({}, function(err, cursor){cursor.toArray(function(error, userArray){
 			console.log('ok');
 			var found = false;
@@ -37,15 +37,18 @@ function route(express_app, db){
 				if (userArray[i]['user'] == request.body.user && userArray[i]['password'] == request.body.password){
 					found = true;
 					request.session.user = request.body.user;
-					response.end("All good! Authenticated <br><a href='/logout'>Logout</a>");
+					response.render('index2.html');
 				}
 
 			}
-			if (!found)
-				response.end('Username/password not found. <br><a href="/register">Register</a>');
+			if (!found){
+				response.writeHead(200, {'Content-Type': 'text/html'});
+				response.end('Username/password not found. <br><a href="/register">Register</a>');}
 		})})
 
 	});
+
+
 
 	express_app.get('/logout', function(request, response){
 		request.session.user = false;
